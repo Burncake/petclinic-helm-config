@@ -1,0 +1,79 @@
+// Jenkinsfile for Cleanup Developer Build Job (cleanup_developer_build)
+// Uninstalls Helm release AND deletes the Kubernetes namespace, waiting for completion.
+
+// --- Configuration ---
+// These MUST match the values used by the 'developer_build' job
+def HELM_RELEASE_NAME = "petclinic-dev"
+def K8S_NAMESPACE = "petclinic-dev"
+def K8S_DELETE_TIMEOUT = "10m" // Timeout for kubectl delete commands
+
+pipeline {
+    // Agent requires helm and kubectl configured
+    agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        timestamps()
+    }
+
+    stages {
+        stage('Uninstall Helm Release & Delete Namespace') {
+            steps {
+                script {
+                    def cleanupFailed = false // Flag to track overall failure
+
+                    // Step 1: Uninstall Helm Release
+                    echo "Attempting to uninstall Helm release '${HELM_RELEASE_NAME}' from namespace '${K8S_NAMESPACE}'..."
+                    try {
+                        // Wait for Helm resources to be terminated with a timeout
+                        sh "helm uninstall ${HELM_RELEASE_NAME} -n ${K8S_NAMESPACE} --wait --timeout ${K8S_DELETE_TIMEOUT}"
+                        echo "Helm uninstall command executed successfully for release '${HELM_RELEASE_NAME}' (or release did not exist)."
+                    } catch (err) {
+                        echo "ERROR: Failed to execute helm uninstall command or it timed out."
+                        echo err.getMessage()
+                        cleanupFailed = true
+                    }
+
+                    // Step 2: Delete Kubernetes Namespace (if Helm uninstall didn't critically fail)
+                    if (!cleanupFailed) {
+                        echo "Attempting to delete Kubernetes namespace '${K8S_NAMESPACE}' and waiting for completion (timeout: ${K8S_DELETE_TIMEOUT})..."
+                        try {
+                            // Use --ignore-not-found=true to prevent errors if namespace is already gone.
+                            // Use --wait=true to wait for deletion.
+                            // Use --timeout to prevent indefinite hangs if deletion gets stuck.
+                            sh "kubectl delete namespace ${K8S_NAMESPACE} --ignore-not-found=true --wait=true --timeout=${K8S_DELETE_TIMEOUT}"
+                            echo "Kubernetes namespace '${K8S_NAMESPACE}' successfully deleted (or did not exist)."
+                        } catch (err) {
+                            // Catch errors during kubectl execution (permissions, connection, timeout, etc.)
+                            echo "ERROR: Failed to execute kubectl delete namespace command or it timed out."
+                            echo err.getMessage()
+                            cleanupFailed = true
+                        }
+                    } else {
+                         echo "Skipping namespace deletion because Helm uninstall failed."
+                    }
+
+                    // Final check for overall failure
+                    if (cleanupFailed) {
+                        error("Cleanup process failed. Check logs for details.")
+                    }
+
+                } // End script
+            } // End steps
+        } // End stage
+    } // End stages
+
+    post {
+        always {
+            echo "Cleanup Pipeline finished with status: ${currentBuild.currentResult}"
+        }
+        success {
+            echo "Cleanup process completed successfully and waited for resource deletion."
+        }
+        failure {
+            // This indicates an issue executing commands or a timeout was reached.
+            echo "FAILED to complete cleanup or timeout reached. Check agent configuration, cluster connectivity, permissions, and potential resource finalizers."
+        }
+    } // End post
+
+} // End pipeline
