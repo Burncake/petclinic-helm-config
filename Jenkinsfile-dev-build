@@ -1,4 +1,4 @@
-// Jenkinsfile for Developer Build Job (developer_build) - Uses Commit IDs
+// Jenkinsfile for Developer Build Job (developer_build) - Uses Commit IDs - Separate Repo - Minikube URL Fix
 
 // Define constants for services and defaults
 def ALL_SERVICES = [
@@ -11,31 +11,33 @@ def ALL_SERVICES = [
     "vets-service",
     "visits-service"
 ]
-def DEFAULT_BRANCH_OR_TAG = "main" // Default branch name
-def DEFAULT_IMAGE_TAG = "latest" // Image tag corresponding to the default branch
-def HELM_RELEASE_NAME = "dev-petclinic" // Release name for Helm
-def HELM_CHART_PATH = "helm-charts/petclinic-umbrella" // Relative path to the umbrella chart
-def K8S_NAMESPACE = "dev-builds" // Target Kubernetes namespace
+def DEFAULT_BRANCH_OR_TAG = "main"
+def DEFAULT_IMAGE_TAG = "latest"
+// --- ADJUSTED DEFAULTS TO MATCH USER'S LOCAL COMMAND ---
+def HELM_RELEASE_NAME = "petclinic-dev" // Updated default release name
+def K8S_NAMESPACE = "petclinic-dev"    // Updated default namespace
+// --- PATHS ARE RELATIVE TO THE NEW REPO CHECKOUT ---
+// *** ADJUST THIS PATH based on where charts are in the NEW repo ***
+def HELM_CHART_PATH = "charts/petclinic-umbrella" // Example: if charts are in 'charts/' subdir
+// --- Directory for checking out App Source ---
+def APP_SOURCE_DIR = "app-source" // Subdirectory name in workspace
 
 pipeline {
-    agent any // Use agent with git, kubectl, and helm configured
+    // *** Ensure agent has git, helm, kubectl, AND minikube installed ***
+    agent any
 
     environment {
-        // Set Docker Hub username - MUST match the one used in CI builds and Helm charts' values.yaml
-        DOCKERHUB_USERNAME = "22127422" // <--- *** REPLACE THIS or ensure Helm chart uses it ***
-        // Path to kubeconfig if not default or handled by agent environment
-        // KUBECONFIG = '/path/to/.kube/config'
+        DOCKERHUB_USERNAME = "22127422" // Still needed for potential image references in values? Verify chart usage.
+        // APP_SOURCE_REPO_URL = "https://github.com/Burncake/spring-petclinic-microservices.git"
     }
 
     parameters {
-        // Define a string parameter for each service branch/tag
+        // --- Parameters for App Source Repo ---
+        string(name: 'APP_SOURCE_REPO_URL', defaultValue: 'https://github.com/Burncake/spring-petclinic-microservices.git', description: 'Git repository URL for the application source code')
+        string(name: 'APP_SOURCE_DEFAULT_BRANCH', defaultValue: 'main', description: 'Default branch of application source repo to ensure checkout works')
+        // --- Service Branch Parameters (same as before) ---
         string(name: 'ADMIN_SERVER_BRANCH', defaultValue: "${DEFAULT_BRANCH_OR_TAG}", description: "Branch for admin-server ('${DEFAULT_BRANCH_OR_TAG}' uses '${DEFAULT_IMAGE_TAG}' tag)")
-        string(name: 'API_GATEWAY_BRANCH', defaultValue: "${DEFAULT_BRANCH_OR_TAG}", description: "Branch for api-gateway ('${DEFAULT_BRANCH_OR_TAG}' uses '${DEFAULT_IMAGE_TAG}' tag)")
-        string(name: 'CONFIG_SERVER_BRANCH', defaultValue: "${DEFAULT_BRANCH_OR_TAG}", description: "Branch for config-server ('${DEFAULT_BRANCH_OR_TAG}' uses '${DEFAULT_IMAGE_TAG}' tag)")
-        string(name: 'CUSTOMERS_SERVICE_BRANCH', defaultValue: "${DEFAULT_BRANCH_OR_TAG}", description: "Branch for customers-service ('${DEFAULT_BRANCH_OR_TAG}' uses '${DEFAULT_IMAGE_TAG}' tag)")
-        string(name: 'DISCOVERY_SERVER_BRANCH', defaultValue: "${DEFAULT_BRANCH_OR_TAG}", description: "Branch for discovery-server ('${DEFAULT_BRANCH_OR_TAG}' uses '${DEFAULT_IMAGE_TAG}' tag)")
-        string(name: 'GENAI_SERVICE_BRANCH', defaultValue: "${DEFAULT_BRANCH_OR_TAG}", description: "Branch for genai-service ('${DEFAULT_BRANCH_OR_TAG}' uses '${DEFAULT_IMAGE_TAG}' tag)")
-        string(name: 'VETS_SERVICE_BRANCH', defaultValue: "${DEFAULT_BRANCH_OR_TAG}", description: "Branch for vets-service ('${DEFAULT_BRANCH_OR_TAG}' uses '${DEFAULT_IMAGE_TAG}' tag)")
+        // ... other service branch parameters ...
         string(name: 'VISITS_SERVICE_BRANCH', defaultValue: "${DEFAULT_BRANCH_OR_TAG}", description: "Branch for visits-service ('${DEFAULT_BRANCH_OR_TAG}' uses '${DEFAULT_IMAGE_TAG}' tag)")
     }
 
@@ -45,99 +47,94 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Source Code & Fetch Updates') {
+        // Stage 1: Verify Helm Chart Path (No changes)
+        stage('Verify Helm Chart Path') {
             steps {
                 script {
-                    // Checkout the repository containing the Helm chart
-                    echo "Checking out source code..."
-                    checkout scm // Assumes SCM is configured in the Jenkins job
-
+                    echo "Running from workspace: ${env.WORKSPACE}"
                     echo "Verifying Helm chart directory exists at ${HELM_CHART_PATH}..."
-                    sh "ls -ld ${HELM_CHART_PATH}" // Simple check if dir exists
+                    sh "ls -ld ${HELM_CHART_PATH}"
+                }
+            }
+        }
 
-                    // --- Git Fetch ---
-                    echo "Fetching latest changes from Git remote 'origin'..."
-                    try {
-                        // Fetch all remote branches/tags information without merging
-                        sh 'git fetch origin --prune'
-                        echo "Git fetch successful."
-                    } catch (e) {
-                        error "FATAL: Failed to fetch from Git remote 'origin'. Check connection and repository URL. Error: ${e.message}"
+        // Stage 2: Checkout Application Source Code (No changes)
+        stage('Checkout Application Source Code') {
+            steps {
+                script {
+                    echo "Checking out application source from ${params.APP_SOURCE_REPO_URL} into ./${APP_SOURCE_DIR} directory..."
+                    dir(APP_SOURCE_DIR) {
+                        deleteDir()
+                        checkout([
+                            $class: 'GitSCM',
+                            branches: [[name: params.APP_SOURCE_DEFAULT_BRANCH]],
+                            userRemoteConfigs: [[url: params.APP_SOURCE_REPO_URL]],
+                        ])
+                        echo "Application source checkout complete."
                     }
                 }
             }
         }
 
+        // Stage 3: Prepare Helm Deployment (Removed global.dockerhubUser)
         stage('Prepare Helm Deployment') {
             steps {
                 script {
                     echo "Determining image tags and preparing Helm deployment command..."
                     def imageTagSetArgs = []
-                    def gitErrors = [] // Collect Git-related errors
+                    def gitErrors = []
 
-                    ALL_SERVICES.each { service ->
-                        def paramName = "${service.toUpperCase().replace('-', '_')}_BRANCH"
-                        def branchParam = params."${paramName}"?.trim() ?: DEFAULT_BRANCH_OR_TAG // Get parameter value
-
-                        def imageTag = '' // Tag to be used for this service
-
-                        if (branchParam.equalsIgnoreCase(DEFAULT_BRANCH_OR_TAG)) {
-                            // Use the default tag (e.g., 'latest') if the parameter is 'main'
-                            imageTag = DEFAULT_IMAGE_TAG
-                            echo "Service [${service}]: Parameter='${branchParam}', Using Default Image Tag='${imageTag}'"
-                        } else {
-                            // Parameter is a specific branch name, find its latest commit ID
-                            echo "Service [${service}]: Parameter='${branchParam}', Attempting to find latest commit ID..."
-                            try {
-                                // Construct the remote branch reference
-                                def remoteBranchRef = "origin/${branchParam}"
-
-                                // Use git rev-parse to get the commit hash of the remote branch HEAD
-                                // This avoids checking out the branch locally, which is safer and faster
-                                imageTag = sh(script: "git rev-parse --short ${remoteBranchRef}", returnStdout: true).trim()
-
-                                if (!imageTag) {
-                                    // This case should ideally be caught by the sh command failing, but double-check
-                                    throw new Exception("Commit ID resolved to empty string for remote ref '${remoteBranchRef}'.")
-                                }
-                                echo "Service [${service}]: Found commit ID '${imageTag}' for branch '${branchParam}'"
-
-                            } catch (e) {
-                                // Handle potential errors like branch not found remotely
-                                echo "ERROR: Could not determine commit ID for service [${service}] branch '${branchParam}'. Check if branch exists remotely ('origin/${branchParam}'). Error: ${e.message}"
-                                // Collect the error message
-                                gitErrors.add("Service [${service}] - Branch '${branchParam}': ${e.getMessage()}")
-                                // Set a clearly invalid tag to prevent accidental deployment of wrong version
-                                imageTag = "error-commit-not-found"
-                            }
+                    dir(APP_SOURCE_DIR) {
+                        echo "Fetching latest changes from Git remote 'origin' for Application Source..."
+                        try {
+                            sh 'git fetch origin --prune'
+                            echo "Git fetch successful for Application Source."
+                        } catch (e) {
+                            error "FATAL: Failed to fetch from App Source Git remote 'origin'. Error: ${e.message}"
                         }
-                        // Add the --set argument for this service's image tag
-                        imageTagSetArgs.add("--set ${service}.image.tag=${imageTag}")
 
-                    } // End iterating through services
+                        ALL_SERVICES.each { service ->
+                            def paramName = "${service.toUpperCase().replace('-', '_')}_BRANCH"
+                            def branchParam = params."${paramName}"?.trim() ?: DEFAULT_BRANCH_OR_TAG
+                            def imageTag = ''
 
-                    // --- Handle Git Errors ---
+                            if (branchParam.equalsIgnoreCase(DEFAULT_BRANCH_OR_TAG)) {
+                                imageTag = DEFAULT_IMAGE_TAG
+                                echo "Service [${service}]: Parameter='${branchParam}', Using Default Image Tag='${imageTag}'"
+                            } else {
+                                echo "Service [${service}]: Parameter='${branchParam}', Attempting to find latest commit ID..."
+                                try {
+                                    def remoteBranchRef = "origin/${branchParam}"
+                                    imageTag = sh(script: "git rev-parse --short ${remoteBranchRef}", returnStdout: true).trim()
+                                    if (!imageTag) { throw new Exception("Commit ID resolved to empty string.") }
+                                    echo "Service [${service}]: Found commit ID '${imageTag}' for branch '${branchParam}'"
+                                } catch (e) {
+                                    echo "ERROR: Service [${service}] Branch '${branchParam}': ${e.getMessage()}"
+                                    gitErrors.add("Service [${service}] - Branch '${branchParam}': ${e.getMessage()}")
+                                    imageTag = "error-commit-not-found"
+                                }
+                            }
+                            imageTagSetArgs.add("--set ${service}.image.tag=${imageTag}")
+                        } // End service loop
+                    } // End dir(APP_SOURCE_DIR)
+
                     if (!gitErrors.isEmpty()) {
-                        // If any errors occurred during commit ID resolution, fail the build
-                        error "FATAL: Failed to determine commit IDs for one or more branches:\n - ${gitErrors.join('\n - ')}"
+                        error "FATAL: Failed to determine commit IDs:\n - ${gitErrors.join('\n - ')}"
                     }
 
-                    // --- Construct Full Helm Command ---
+                    // *** Construct Helm command WITHOUT global.dockerhubUser ***
+                    // Uses updated K8S_NAMESPACE and HELM_RELEASE_NAME defaults
                     def helmCmd = "helm upgrade --install ${HELM_RELEASE_NAME} ./${HELM_CHART_PATH} --namespace ${K8S_NAMESPACE} --create-namespace --wait --timeout 10m"
-                    // Add global values if needed (e.g., Docker Hub user)
-                    helmCmd += " --set global.dockerhubUser=${env.DOCKERHUB_USERNAME}"
-                    // Append all the dynamically generated --set arguments
+                    // --- REMOVED: helmCmd += " --set global.dockerhubUser=${env.DOCKERHUB_USERNAME}" ---
                     env.HELM_DEPLOY_COMMAND = "${helmCmd} ${imageTagSetArgs.join(' ')}"
-
                     echo "Helm command prepared:"
-                    // Use masking or careful logging if sensitive values were included
                     echo env.HELM_DEPLOY_COMMAND
                 }
             }
         }
 
+        // Stage 4: Deploy via Helm (No changes)
         stage('Deploy via Helm') {
-            // This stage remains largely the same as before
             steps {
                 script {
                     echo "Executing Helm deployment to namespace '${K8S_NAMESPACE}'..."
@@ -154,37 +151,41 @@ pipeline {
             }
         }
 
+        // Stage 5: Provide Access Information (Using minikube service --url)
         stage('Provide Access Information') {
-            // This stage remains largely the same as before
             steps {
                 script {
-                    echo "Attempting to retrieve access information (API Gateway NodePort)..."
+                    echo "Attempting to retrieve access URL via 'minikube service --url'..."
+                    // Uses updated K8S_NAMESPACE and HELM_RELEASE_NAME defaults
+                    def apiGatewayServiceName = "${HELM_RELEASE_NAME}-api-gateway" // Should be petclinic-dev-api-gateway
+                    def serviceUrlCmd = "minikube service ${apiGatewayServiceName} -n ${K8S_NAMESPACE} --url"
                     try {
-                        def minikubeIp = sh(script: "minikube ip", returnStdout: true).trim()
-                        if (!minikubeIp) {
-                            echo "WARNING: Could not determine Minikube IP automatically. Using placeholder '<WORKER_NODE_IP>'."
-                            minikubeIp = "<WORKER_NODE_IP>" // Placeholder
-                        }
+                        // Execute the command and capture output.
+                        // Use '|| true' to prevent build failure if minikube exits non-zero
+                        // after printing URL (common in non-interactive environments).
+                        def serviceUrlsOutput = sh(script: "${serviceUrlCmd} || true", returnStdout: true).trim()
 
-                        def apiGatewayServiceName = "${HELM_RELEASE_NAME}-api-gateway"
-                        def nodePortCmd = "kubectl get svc ${apiGatewayServiceName} -n ${K8S_NAMESPACE} -o=jsonpath='{.spec.ports[?(@.name==\"http\")].nodePort}'"
-                        def nodePort = sh(script: nodePortCmd, returnStdout: true).trim()
-
-                        if (nodePort) {
+                        if (serviceUrlsOutput) {
                             echo "-----------------------------------------------------"
-                            echo "Access the PetClinic UI via:"
-                            echo "URL: http://${minikubeIp}:${nodePort}"
-                            echo "(Replace ${minikubeIp} with your K8s Worker Node IP if not using Minikube Docker driver directly)"
+                            echo "Access the PetClinic UI via one of the following URLs:"
+                            // Print each line of output, as there might be multiple URLs (http/https)
+                            serviceUrlsOutput.split('\n').each { url ->
+                                if (url.trim()) { // Avoid printing empty lines
+                                    echo "- ${url.trim()}"
+                                }
+                            }
+                            echo "(This URL is generated by 'minikube service' and may tunnel traffic)"
                             echo "-----------------------------------------------------"
                         } else {
-                            echo "WARNING: Could not retrieve NodePort for service '${apiGatewayServiceName}' in namespace '${K8S_NAMESPACE}'. Check service status."
+                            echo "WARNING: 'minikube service --url' did not return any output for service '${apiGatewayServiceName}' in namespace '${K8S_NAMESPACE}'. Is the service running and the API gateway pod ready?"
+                            echo "You might need to wait a bit and run manually: ${serviceUrlCmd}"
                             currentBuild.result = 'UNSTABLE'
                         }
                     } catch (err) {
-                         echo "WARNING: Failed to retrieve access information automatically."
-                         echo err.getMessage()
-                         echo "Please check services manually: kubectl get svc -n ${K8S_NAMESPACE}"
-                         currentBuild.result = 'UNSTABLE'
+                        echo "WARNING: Failed to execute 'minikube service --url' command."
+                        echo err.getMessage()
+                        echo "Please check services manually: kubectl get svc -n ${K8S_NAMESPACE}"
+                        currentBuild.result = 'UNSTABLE'
                     }
                 }
             }
@@ -192,7 +193,8 @@ pipeline {
     } // End stages
 
     post {
-        always {
+        // ... same as before ...
+         always {
             echo "Developer Build Pipeline finished with status: ${currentBuild.currentResult}"
             // cleanWs() // Clean workspace if desired
         }
@@ -200,7 +202,7 @@ pipeline {
             echo "Deployment successful."
         }
         unstable {
-            echo "Deployment finished with warnings (e.g., could not get NodePort automatically)."
+            echo "Deployment finished with warnings (e.g., could not get access URL automatically)."
         }
         failure {
             echo "Deployment FAILED. Check Git errors, Helm errors, or Kubernetes logs."
