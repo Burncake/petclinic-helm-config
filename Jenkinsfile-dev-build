@@ -215,6 +215,9 @@ pipeline {
                     echo "3. The command will output one or more URLs. Open one in your browser."
                     echo "(You might need to leave the terminal running while accessing the URL if it uses a tunnel)."
                     echo "-----------------------------------------------------"
+                    
+                    // Clean up link
+                    currentBuild.description = "Build #${currentBuild.number} [Clean up link](http://localhost:8080/job/cleanup_developer_build/build?token=superSecretCleanupToken)"
                 }
             }
         }
