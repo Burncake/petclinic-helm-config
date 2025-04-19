@@ -1,0 +1,56 @@
+# Staging specific values
+# Image tags below will be automatically updated by the Jenkins CI pipeline
+# during tagged builds (e.g., when tag v1.2.3 is pushed).
+
+adminServer:
+  image:
+    tag: staging-placeholder # Jenkins will replace this value
+
+apiGateway:
+  image:
+    tag: staging-placeholder
+
+configServer:
+  image:
+    tag: staging-placeholder
+
+customersService:
+  image:
+    tag: staging-placeholder
+
+discoveryServer:
+  image:
+    tag: staging-placeholder
+
+genaiService:
+  image:
+    tag: staging-placeholder
+
+vetsService:
+  image:
+    tag: staging-placeholder
+
+visitsService:
+  image:
+    tag: staging-placeholder
+
+# --- Optional Staging Overrides ---
+# You can add other Helm values here that should ONLY apply to the staging environment
+# For example, if you want different resource limits or replicas than default:
+# customersService:
+#   replicaCount: 2
+#   resources:
+#     limits:
+#       cpu: 500m
+#       memory: 768Mi
+#     requests:
+#       cpu: 250m
+#       memory: 512Mi
+
+# apiGateway:
+#   service:
+#     # Example: Use a different NodePort for staging if needed
+#     nodePort: 30081
+
+# NOTE: Ensure the keys (adminServer, apiGateway, etc.) and structure (image.tag)
+# match exactly what your Jenkins CI script (Stage 4) expects to update.
