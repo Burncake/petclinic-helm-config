@@ -1,4 +1,4 @@
-# helm-charts/petclinic-umbrella/values.yaml
+# Deployed commit: 50a1ebf
 
 config-server:
   image:
