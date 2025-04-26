@@ -24,10 +24,10 @@ spec:
     helm:
       parameters:
         # --- Enable Services (Set based on your dev environment needs) ---
-        # - name: 'adminServer.enabled'       # Use camelCase from values.yaml
-        #   value: 'true'                   # Enable for dev?
-        # - name: 'genaiService.enabled'       # Use camelCase from values.yaml
-        #   value: 'true'                   # Enable for dev?
+        - name: 'adminServer.enabled'       # Use camelCase from values.yaml
+          value: 'true'                   # Enable for dev?
+        - name: 'genaiService.enabled'       # Use camelCase from values.yaml
+          value: 'true'                   # Enable for dev?
         - name: 'customersService.enabled'   # Ensure others are explicitly enabled if needed
           value: 'true'
         - name: 'apiGateway.enabled'         # Ensure others are explicitly enabled if needed
