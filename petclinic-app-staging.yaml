@@ -30,8 +30,29 @@ spec:
       # Explicitly set parameters here if needed (e.g., ensure services are enabled)
       # These override values from both values.yaml and values-staging.yaml
       parameters:
-        - name: 'apiGateway.image.tag'
-          value: 'v0.1.5'
+        # --- Enable Services (Set based on your staging environment needs) ---
+        # Uses camelCase based on previous values.yaml discussion
+        # - name: 'adminServer.enabled'
+        #   value: 'true'
+        # - name: 'genaiService.enabled'
+        #   value: 'true'
+        - name: 'customersService.enabled'
+          value: 'true'
+        - name: 'apiGateway.enabled'
+          value: 'true'
+        - name: 'vetsService.enabled'
+          value: 'true'
+        - name: 'visitsService.enabled'
+          value: 'true'
+        # ConfigServer and DiscoveryServer assumed always enabled
+        # --- NEW Ingress Settings for STAGING ---
+        - name: 'apiGateway.ingress.enabled'  # Enable the ingress
+          value: 'true'
+        - name: 'apiGateway.ingress.hostname' # Set the STAGING hostname
+          value: 'petclinic.staging.local' # Example hostname for STAGING
+        # Optional: Specify ingress class if needed and not default
+        # - name: 'apiGateway.ingress.className'
+        #   value: 'nginx'
 
   # Destination where the application should be deployed
   destination:
