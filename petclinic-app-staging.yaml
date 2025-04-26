@@ -12,7 +12,7 @@ spec:
   # Source of the deployment manifests (your Helm chart repo)
   source:
     # URL of your Helm chart repository
-    repoURL: https://github.com/Burncake/petclinic-helm-config.git # !!! REPLACE THIS e.g., https://github.com/your-username/petclinic-helm-config.git !!!
+    repoURL: https://github.com/Burncake/petclinic-helm-config.git
 
     # Path to the umbrella Helm chart within the repository
     path: charts/petclinic-umbrella      # !!! REPLACE THIS if your path is different !!!
@@ -32,10 +32,10 @@ spec:
       parameters:
         # --- Enable Services (Set based on your staging environment needs) ---
         # Uses camelCase based on previous values.yaml discussion
-        - name: 'adminServer.enabled'
-          value: 'true'
-        - name: 'genaiService.enabled'
-          value: 'true'
+        # - name: 'adminServer.enabled'
+        #   value: 'true'
+        # - name: 'genaiService.enabled'
+        #   value: 'true'
         - name: 'customersService.enabled'
           value: 'true'
         - name: 'apiGateway.enabled'
@@ -63,10 +63,15 @@ spec:
 
   # Sync policy - Manual Sync for Staging (Recommended starting point)
   syncPolicy:
-    # automated: null # Keep commented out for manual sync
-    # Optionally, add sync options like CreateNamespace even for manual sync
+    # Enable automated synchronization
+    automated:
+      # Prune resources that are removed from the Git repository
+      prune: true
+      # Automatically sync when detecting differences (out-of-sync state)
+      selfHeal: true
+
+    # Additional synchronization options
     syncOptions:
+      # Automatically create the target namespace if it doesn't exist
       - CreateNamespace=true
-      # You might want to disable prune/self-heal initially for staging:
-      # - Prune=false
-      # - SelfHeal=false
+      # Other options like ApplyOutOfSyncOnly=true can be added here if needed

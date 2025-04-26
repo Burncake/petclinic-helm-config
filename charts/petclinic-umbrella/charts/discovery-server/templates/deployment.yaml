@@ -32,7 +32,7 @@ spec:
         - name: wait-for-config-server
           image: busybox:1.36
           # --- MODIFY THIS LINE ---
-          command: ['sh', '-c', 'until nc -z -w 2 petclinic-dev-config-server 8888; do echo waiting for config-server; sleep 2; done;']
+          command: ['sh', '-c', 'until nc -z -w 2 {{ .Release.Name }}-config-server 8888; do echo "[api-gateway] waiting for config-server"; sleep 2; done;']
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
