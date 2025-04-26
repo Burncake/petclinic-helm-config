@@ -28,40 +28,40 @@ spec:
         #   value: 'true'                   # Enable for dev?
         # - name: 'genaiService.enabled'       # Use camelCase from values.yaml
         #   value: 'true'                   # Enable for dev?
-        - name: 'customersService.enabled'   # Ensure others are explicitly enabled if needed
+        - name: 'customers-service.enabled'   # Ensure others are explicitly enabled if needed
           value: 'true'
-        - name: 'apiGateway.enabled'         # Ensure others are explicitly enabled if needed
+        - name: 'api-gateway.enabled'         # Ensure others are explicitly enabled if needed
           value: 'true'
-        - name: 'vetsService.enabled'        # Ensure others are explicitly enabled if needed
+        - name: 'vets-service.enabled'        # Ensure others are explicitly enabled if needed
           value: 'true'
-        - name: 'visitsService.enabled'       # Ensure others are explicitly enabled if needed
+        - name: 'visits-service.enabled'       # Ensure others are explicitly enabled if needed
           value: 'true'
         # ConfigServer and DiscoveryServer might not have 'enabled' flags if always required
 
         # --- Set Image Tags using camelCase names ---
-        - name: 'adminServer.image.tag'       # Use camelCase from values.yaml
+        - name: 'admin-server.image.tag'       # Use camelCase from values.yaml
           value: 'latest'
-        - name: 'apiGateway.image.tag'        # Use camelCase from values.yaml
+        - name: 'api-gateway.image.tag'        # Use camelCase from values.yaml
           value: 'latest'
-        - name: 'configServer.image.tag'      # Use camelCase from values.yaml
+        - name: 'config-server.image.tag'      # Use camelCase from values.yaml
           value: 'latest'
-        - name: 'customersService.image.tag'  # Use camelCase from values.yaml
+        - name: 'customers-service.image.tag'  # Use camelCase from values.yaml
           value: 'latest'
-        - name: 'discoveryServer.image.tag'   # Use camelCase from values.yaml
+        - name: 'discovery-server.image.tag'   # Use camelCase from values.yaml
           value: 'latest'
-        - name: 'genaiService.image.tag'      # Use camelCase from values.yaml
+        - name: 'genai-service.image.tag'      # Use camelCase from values.yaml
           value: 'latest'
-        - name: 'vetsService.image.tag'       # Use camelCase from values.yaml
+        - name: 'vets-service.image.tag'       # Use camelCase from values.yaml
           value: 'latest'
-        - name: 'visitsService.image.tag'      # Use camelCase from values.yaml
+        - name: 'visit-service.image.tag'      # Use camelCase from values.yaml
           value: 'latest'
         # --- NEW Ingress Settings for DEV ---
-        - name: 'apiGateway.ingress.enabled'  # Enable the ingress
+        - name: 'api-gateway.ingress.enabled'  # Enable the ingress
           value: 'true'
-        - name: 'apiGateway.ingress.hostname' # Set the DEV hostname
+        - name: 'api-gateway.ingress.hostname' # Set the DEV hostname
           value: 'petclinic.dev.local'     # Example hostname for DEV
         # Optional: Specify ingress class if needed and not default
-        # - name: 'apiGateway.ingress.className'
+        # - name: 'api-gateway.ingress.className'
         #   value: 'nginx'
 
 

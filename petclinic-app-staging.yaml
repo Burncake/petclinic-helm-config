@@ -32,26 +32,26 @@ spec:
       parameters:
         # --- Enable Services (Set based on your staging environment needs) ---
         # Uses camelCase based on previous values.yaml discussion
-        # - name: 'adminServer.enabled'
+        # - name: 'admin-server.enabled'
         #   value: 'true'
-        # - name: 'genaiService.enabled'
+        # - name: 'genai-service.enabled'
         #   value: 'true'
-        - name: 'customersService.enabled'
+        - name: 'customers-service.enabled'
           value: 'true'
-        - name: 'apiGateway.enabled'
+        - name: 'api-gateway.enabled'
           value: 'true'
-        - name: 'vetsService.enabled'
+        - name: 'vets-service.enabled'
           value: 'true'
-        - name: 'visitsService.enabled'
+        - name: 'visits-service.enabled'
           value: 'true'
         # ConfigServer and DiscoveryServer assumed always enabled
         # --- NEW Ingress Settings for STAGING ---
-        - name: 'apiGateway.ingress.enabled'  # Enable the ingress
+        - name: 'api-gateway.ingress.enabled'  # Enable the ingress
           value: 'true'
-        - name: 'apiGateway.ingress.hostname' # Set the STAGING hostname
+        - name: 'api-gateway.ingress.hostname' # Set the STAGING hostname
           value: 'petclinic.staging.local' # Example hostname for STAGING
         # Optional: Specify ingress class if needed and not default
-        # - name: 'apiGateway.ingress.className'
+        # - name: 'api-gateway.ingress.className'
         #   value: 'nginx'
 
   # Destination where the application should be deployed
