@@ -22,6 +22,9 @@ spec:
 
     # Specify Helm parameters to override values.yaml
     helm:
+      valueFiles:
+        - values.yaml
+
       parameters:
         # --- Enable Services (Set based on your dev environment needs) ---
         # - name: 'adminServer.enabled'       # Use camelCase from values.yaml
@@ -33,28 +36,11 @@ spec:
         - name: 'api-gateway.enabled'         # Ensure others are explicitly enabled if needed
           value: 'true'
         - name: 'vets-service.enabled'        # Ensure others are explicitly enabled if needed
-          value: 'true'
+          value: 'false'
         - name: 'visits-service.enabled'       # Ensure others are explicitly enabled if needed
-          value: 'true'
+          value: 'false'
         # ConfigServer and DiscoveryServer might not have 'enabled' flags if always required
 
-        # --- Set Image Tags using camelCase names ---
-        - name: 'admin-server.image.tag'       # Use camelCase from values.yaml
-          value: 'latest'
-        - name: 'api-gateway.image.tag'        # Use camelCase from values.yaml
-          value: 'latest'
-        - name: 'config-server.image.tag'      # Use camelCase from values.yaml
-          value: 'latest'
-        - name: 'customers-service.image.tag'  # Use camelCase from values.yaml
-          value: 'latest'
-        - name: 'discovery-server.image.tag'   # Use camelCase from values.yaml
-          value: 'latest'
-        - name: 'genai-service.image.tag'      # Use camelCase from values.yaml
-          value: 'latest'
-        - name: 'vets-service.image.tag'       # Use camelCase from values.yaml
-          value: 'latest'
-        - name: 'visit-service.image.tag'      # Use camelCase from values.yaml
-          value: 'latest'
         # --- NEW Ingress Settings for DEV ---
         - name: 'api-gateway.ingress.enabled'  # Enable the ingress
           value: 'true'
