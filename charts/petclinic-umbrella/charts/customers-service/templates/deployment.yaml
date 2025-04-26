@@ -73,14 +73,14 @@ spec:
             httpGet:
               path: /actuator/health # Use base health endpoint
               port: http
-            initialDelaySeconds: 90 # Increased delay further for dependent service
+            initialDelaySeconds: 120 # Increased delay further for dependent service
             periodSeconds: 15
             failureThreshold: 6  # Allow more failures before restarting
           readinessProbe:
             httpGet:
               path: /actuator/health # Use base health endpoint
               port: http
-            initialDelaySeconds: 120
+            initialDelaySeconds: 125
             periodSeconds: 15
             # failureThreshold: 3
           resources:

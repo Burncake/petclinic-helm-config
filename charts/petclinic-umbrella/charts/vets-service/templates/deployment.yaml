@@ -70,14 +70,14 @@ spec:
             httpGet:
               path: /actuator/health # Use base health endpoint
               port: http
-            initialDelaySeconds: 90 # Using same delays as customers-service
+            initialDelaySeconds: 120 # Using same delays as customers-service
             periodSeconds: 15
             failureThreshold: 6
           readinessProbe:
             httpGet:
               path: /actuator/health # Use base health endpoint
               port: http
-            initialDelaySeconds: 120 # Using same delays as customers-service
+            initialDelaySeconds: 125 # Using same delays as customers-service
             periodSeconds: 15
             # failureThreshold: 3
           resources:
