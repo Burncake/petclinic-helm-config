@@ -47,13 +47,13 @@ spec:
           livenessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 20 # Give time for the app to start
-            periodSeconds: 10
+            initialDelaySeconds: 45 # Give time for the app to start
+            periodSeconds: 15
           readinessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 15 # Check readiness sooner than liveness
-            periodSeconds: 10
+            initialDelaySeconds: 30 # Check readiness sooner than liveness
+            periodSeconds: 15
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

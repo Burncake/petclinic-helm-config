@@ -78,7 +78,7 @@ spec:
             httpGet:
               path: /actuator/health # Use base health endpoint
               port: http
-            initialDelaySeconds: 60 # Allow ample time for SBA to start
+            initialDelaySeconds: 120 # Allow ample time for SBA to start
             periodSeconds: 15
             # failureThreshold: 3
           resources:
