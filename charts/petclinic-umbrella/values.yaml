@@ -1,39 +1,39 @@
 # helm-charts/petclinic-umbrella/values.yaml
 
-configServer:
+config-server:
   image:
     tag: latest
 
-discoveryServer:
+discovery-server:
   image:
     tag: latest
 
-customersService:
+customers-service:
   enabled: true # <-- Add flag
   image:
     tag: latest
 
-apiGateway:
+api-gateway:
   enabled: true # <-- Add flag
   image:
     tag: latest
 
-vetsService:
+vets-service:
   enabled: false # <-- Add flag
   image:
     tag: latest
 
-visitsService:
+visits-service:
   enabled: false # <-- Add flag
   image:
     tag: latest
 
-adminServer:
+admin-server:
   enabled: false # <-- Add flag
   image:
     tag: latest
 
-genaiService:
+genai-service:
   enabled: false # <-- Add flag
   image:
     tag: latest

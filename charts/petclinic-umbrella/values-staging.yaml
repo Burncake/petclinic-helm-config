@@ -1,24 +1,31 @@
-adminServer:
+admin-server:
   image:
     tag: v0.1.5
-apiGateway:
+
+api-gateway:
   image:
     tag: v0.1.5
-configServer:
+
+config-server:
   image:
     tag: v0.1.5
-customersService:
+
+customers-service:
   image:
     tag: v0.1.5
-discoveryServer:
+
+discovery-server:
   image:
     tag: v0.1.5
-genaiService:
+
+genai-service:
   image:
     tag: v0.1.5
-vetsService:
+
+vets-service:
   image:
     tag: v0.1.5
-visitsService:
+
+visits-service:
   image:
     tag: v0.1.5
