@@ -27,9 +27,9 @@ spec:
 
       parameters:
         # --- Enable Services (Set based on your dev environment needs) ---
-        # - name: 'adminServer.enabled'       # Use camelCase from values.yaml
+        # - name: 'admin-server.enabled'       # Use camelCase from values.yaml
         #   value: 'true'                   # Enable for dev?
-        # - name: 'genaiService.enabled'       # Use camelCase from values.yaml
+        # - name: 'genai-service.enabled'       # Use camelCase from values.yaml
         #   value: 'true'                   # Enable for dev?
         - name: 'customers-service.enabled'   # Ensure others are explicitly enabled if needed
           value: 'true'
