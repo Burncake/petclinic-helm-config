@@ -1,0 +1,72 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # Name of the Argo CD Application resource
+  name: petclinic-staging
+  # Deploy Application resource into the argocd namespace
+  namespace: argocd
+spec:
+  # Link to the Argo CD project
+  project: default
+
+  # Source of the deployment manifests (your Helm chart repo)
+  source:
+    # URL of your Helm chart repository
+    repoURL: https://github.com/Burncake/petclinic-helm-config.git # !!! REPLACE THIS e.g., https://github.com/your-username/petclinic-helm-config.git !!!
+
+    # Path to the umbrella Helm chart within the repository
+    path: charts/petclinic-umbrella      # !!! REPLACE THIS if your path is different !!!
+
+    # Target revision (HEAD tracks the branch Jenkins pushes updates to, e.g., main)
+    targetRevision: HEAD
+
+    # Specify Helm configuration
+    helm:
+      # Load values from this file IN ADDITION to the chart's default values.yaml
+      # Jenkins CI pipeline is responsible for updating the image tags within this file.
+      valueFiles:
+        - values-staging.yaml # !!! This path is relative to 'path' above. Ensure Jenkins updates this file path: HELM_STAGING_VALUES_PATH !!!
+
+      # Explicitly set parameters here if needed (e.g., ensure services are enabled)
+      # These override values from both values.yaml and values-staging.yaml
+      parameters:
+        # --- Enable Services (Set based on your staging environment needs) ---
+        # Uses camelCase based on previous values.yaml discussion
+        - name: 'adminServer.enabled'
+          value: 'true'
+        - name: 'genaiService.enabled'
+          value: 'true'
+        - name: 'customersService.enabled'
+          value: 'true'
+        - name: 'apiGateway.enabled'
+          value: 'true'
+        - name: 'vetsService.enabled'
+          value: 'true'
+        - name: 'visitsService.enabled'
+          value: 'true'
+        # ConfigServer and DiscoveryServer assumed always enabled
+        # --- NEW Ingress Settings for STAGING ---
+        - name: 'apiGateway.ingress.enabled'  # Enable the ingress
+          value: 'true'
+        - name: 'apiGateway.ingress.hostname' # Set the STAGING hostname
+          value: 'petclinic.staging.local' # Example hostname for STAGING
+        # Optional: Specify ingress class if needed and not default
+        # - name: 'apiGateway.ingress.className'
+        #   value: 'nginx'
+
+  # Destination where the application should be deployed
+  destination:
+    # Target the same Kubernetes cluster where Argo CD is running
+    server: https://kubernetes.default.svc
+    # Target the dedicated namespace for the staging environment
+    namespace: petclinic-staging-env # Ensure this namespace exists or is created
+
+  # Sync policy - Manual Sync for Staging (Recommended starting point)
+  syncPolicy:
+    # automated: null # Keep commented out for manual sync
+    # Optionally, add sync options like CreateNamespace even for manual sync
+    syncOptions:
+      - CreateNamespace=true
+      # You might want to disable prune/self-heal initially for staging:
+      # - Prune=false
+      # - SelfHeal=false

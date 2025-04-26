@@ -1,0 +1,88 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # Name of the Argo CD Application resource
+  name: petclinic-dev
+  # Deploy Application resource into the argocd namespace
+  namespace: argocd
+spec:
+  # Link to the Argo CD project (default is usually fine)
+  project: default
+
+  # Source of the deployment manifests (your Helm chart repo)
+  source:
+    # URL of your Helm chart repository
+    repoURL: https://github.com/Burncake/petclinic-helm-config.git # !!! REPLACE THIS !!! e.g., https://github.com/your-username/petclinic-helm-config.git
+
+    # Path to the umbrella Helm chart within the repository
+    path: charts/petclinic-umbrella      # !!! REPLACE THIS if your path is different !!!
+
+    # Target revision (HEAD means latest commit on the default branch)
+    targetRevision: HEAD
+
+    # Specify Helm parameters to override values.yaml
+    helm:
+      parameters:
+        # --- Enable Services (Set based on your dev environment needs) ---
+        # - name: 'adminServer.enabled'       # Use camelCase from values.yaml
+        #   value: 'true'                   # Enable for dev?
+        # - name: 'genaiService.enabled'       # Use camelCase from values.yaml
+        #   value: 'true'                   # Enable for dev?
+        - name: 'customersService.enabled'   # Ensure others are explicitly enabled if needed
+          value: 'true'
+        - name: 'apiGateway.enabled'         # Ensure others are explicitly enabled if needed
+          value: 'true'
+        - name: 'vetsService.enabled'        # Ensure others are explicitly enabled if needed
+          value: 'true'
+        - name: 'visitsService.enabled'       # Ensure others are explicitly enabled if needed
+          value: 'true'
+        # ConfigServer and DiscoveryServer might not have 'enabled' flags if always required
+
+        # --- Set Image Tags using camelCase names ---
+        - name: 'adminServer.image.tag'       # Use camelCase from values.yaml
+          value: 'latest'
+        - name: 'apiGateway.image.tag'        # Use camelCase from values.yaml
+          value: 'latest'
+        - name: 'configServer.image.tag'      # Use camelCase from values.yaml
+          value: 'latest'
+        - name: 'customersService.image.tag'  # Use camelCase from values.yaml
+          value: 'latest'
+        - name: 'discoveryServer.image.tag'   # Use camelCase from values.yaml
+          value: 'latest'
+        - name: 'genaiService.image.tag'      # Use camelCase from values.yaml
+          value: 'latest'
+        - name: 'vetsService.image.tag'       # Use camelCase from values.yaml
+          value: 'latest'
+        - name: 'visitsService.image.tag'      # Use camelCase from values.yaml
+          value: 'latest'
+        # --- NEW Ingress Settings for DEV ---
+        - name: 'apiGateway.ingress.enabled'  # Enable the ingress
+          value: 'true'
+        - name: 'apiGateway.ingress.hostname' # Set the DEV hostname
+          value: 'petclinic.dev.local'     # Example hostname for DEV
+        # Optional: Specify ingress class if needed and not default
+        # - name: 'apiGateway.ingress.className'
+        #   value: 'nginx'
+
+
+  # Destination where the application should be deployed
+  destination:
+    # Target the same Kubernetes cluster where Argo CD is running
+    server: https://kubernetes.default.svc
+    # Target the dedicated namespace for the dev environment
+    namespace: petclinic-dev-env
+
+  # Sync policy defines how Argo CD synchronizes the state
+  syncPolicy:
+    # Enable automated synchronization
+    automated:
+      # Prune resources that are removed from the Git repository
+      prune: true
+      # Automatically sync when detecting differences (out-of-sync state)
+      selfHeal: true
+
+    # Additional synchronization options
+    syncOptions:
+      # Automatically create the target namespace if it doesn't exist
+      - CreateNamespace=true
+      # Other options like ApplyOutOfSyncOnly=true can be added here if needed
