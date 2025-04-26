@@ -41,9 +41,9 @@ spec:
         - name: 'apiGateway.enabled'
           value: 'true'
         - name: 'vetsService.enabled'
-          value: 'true'
+          value: 'false'
         - name: 'visitsService.enabled'
-          value: 'true'
+          value: 'false'
         # ConfigServer and DiscoveryServer assumed always enabled
         # --- NEW Ingress Settings for STAGING ---
         - name: 'apiGateway.ingress.enabled'  # Enable the ingress
