@@ -17,8 +17,8 @@ def ALL_SERVICES = [
 ]
 def DEFAULT_BRANCH_OR_TAG = "main" // Default branch name in parameters
 def DEFAULT_IMAGE_TAG = "latest"   // Image tag corresponding to the default branch
-def HELM_RELEASE_NAME = "petclinic-dev" // Default Helm release name
-def K8S_NAMESPACE = "petclinic-dev"    // Default Kubernetes namespace for deployment
+def HELM_RELEASE_NAME = "petclinic-test" // Default Helm release name
+def K8S_NAMESPACE = "petclinic-test"    // Default Kubernetes namespace for deployment
 
 // --- PATHS ARE RELATIVE TO THIS REPO'S CHECKOUT ---
 // *** ADJUST THIS PATH based on where charts are in THIS repo ***
@@ -209,7 +209,7 @@ pipeline {
                     echo "1. Open a terminal ON YOUR HOST PC (where Minikube/Docker Desktop is running)."
                     echo "2. Run the following command:"
                     // Construct the command using the pipeline's variables
-                    def apiGatewayServiceName = "${HELM_RELEASE_NAME}-api-gateway" // e.g., petclinic-dev-api-gateway
+                    def apiGatewayServiceName = "${HELM_RELEASE_NAME}-api-gateway" // e.g., petclinic-test-api-gateway
                     echo "   minikube service ${apiGatewayServiceName} -n ${K8S_NAMESPACE} --url"
                     echo ""
                     echo "3. The command will output one or more URLs. Open one in your browser."

@@ -3,8 +3,8 @@
 
 // --- Configuration ---
 // These MUST match the values used by the 'developer_build' job
-def HELM_RELEASE_NAME = "petclinic-dev"
-def K8S_NAMESPACE = "petclinic-dev"
+def HELM_RELEASE_NAME = "petclinic-test"
+def K8S_NAMESPACE = "petclinic-test"
 def K8S_DELETE_TIMEOUT = "10m" // Timeout for kubectl delete commands
 
 pipeline {
