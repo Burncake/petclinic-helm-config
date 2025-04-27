@@ -1,24 +1,24 @@
 admin-server:
   image:
-    tag: v0.1.5
+    tag: 7b0e436
 api-gateway:
   image:
-    tag: v0.1.5
+    tag: 7b0e436
 config-server:
   image:
-    tag: v0.1.5
+    tag: 7b0e436
 customers-service:
   image:
-    tag: v0.1.5
+    tag: 7b0e436
 discovery-server:
   image:
-    tag: v0.1.5
+    tag: 7b0e436
 genai-service:
   image:
-    tag: v0.1.5
+    tag: 7b0e436
 vets-service:
   image:
-    tag: v0.1.5
+    tag: 7b0e436
 visits-service:
   image:
-    tag: v0.1.5
+    tag: 7b0e436
