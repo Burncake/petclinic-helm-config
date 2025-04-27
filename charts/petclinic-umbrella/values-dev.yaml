@@ -1,24 +1,24 @@
 admin-server:
   image:
-    tag: 7b0e436
+    tag: 2f5159b
 api-gateway:
   image:
-    tag: 7b0e436
+    tag: 2f5159b
 config-server:
   image:
-    tag: 7b0e436
+    tag: 2f5159b
 customers-service:
   image:
-    tag: 7b0e436
+    tag: 2f5159b
 discovery-server:
   image:
-    tag: 7b0e436
+    tag: 2f5159b
 genai-service:
   image:
-    tag: 7b0e436
+    tag: 2f5159b
 vets-service:
   image:
-    tag: 7b0e436
+    tag: 2f5159b
 visits-service:
   image:
-    tag: 7b0e436
+    tag: 2f5159b
