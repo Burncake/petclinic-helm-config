@@ -12,7 +12,7 @@ spec:
   # Source of the deployment manifests (your Helm chart repo)
   source:
     # URL of your Helm chart repository
-    repoURL: https://github.com/Burncake/petclinic-helm-config.git # !!! REPLACE THIS !!! e.g., https://github.com/your-username/petclinic-helm-config.git
+    repoURL: https://github.com/Burncake/petclinic-helm-config.git
 
     # Path to the umbrella Helm chart within the repository
     path: charts/petclinic-umbrella      # !!! REPLACE THIS if your path is different !!!
@@ -23,7 +23,7 @@ spec:
     # Specify Helm parameters to override values.yaml
     helm:
       valueFiles:
-        - values.yaml
+        - values-dev.yaml
 
       parameters:
         # --- Enable Services (Set based on your dev environment needs) ---

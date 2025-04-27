@@ -1,5 +1,3 @@
-# Deployed commit: 50a1ebf
-
 config-server:
   image:
     tag: latest
@@ -9,31 +7,31 @@ discovery-server:
     tag: latest
 
 customers-service:
-  enabled: true # <-- Add flag
+  enabled: true
   image:
     tag: latest
 
 api-gateway:
-  enabled: true # <-- Add flag
+  enabled: true
   image:
     tag: latest
 
 vets-service:
-  enabled: false # <-- Add flag
+  enabled: true
   image:
     tag: latest
 
 visits-service:
-  enabled: false # <-- Add flag
+  enabled: true
   image:
     tag: latest
 
 admin-server:
-  enabled: false # <-- Add flag
+  enabled: false
   image:
     tag: latest
 
 genai-service:
-  enabled: false # <-- Add flag
+  enabled: false
   image:
     tag: latest
